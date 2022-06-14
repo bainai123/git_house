@@ -6,3 +6,5 @@ git is free software.
 21:58添加了一句话
 
 22:10添加的
+
+要加入GitHub了
