@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kwmusic</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="con_l">
+            <div class="tabs flex_center">
+                <span v-for="(bang,index) in bangMenu"
+                    @click="changeTab(bang.list[0].sourceid,bang.name,bang.list[0].name)"
+                    :class="{active:curBang==bang.name }">
+                    {{bang.name}}
+                </span>
+            </div>
+            <ul class="tab_con">
+                <li :class="{flex_center:true ,change:curBangList == item.name}" v-for="item in bangList.list"
+                    @click="changeSongList(item.sourceid,item.name)">
+                    <img :src="item.pic" alt="" class="cover">
+                    <div class="item_info">
+                        <p class="name">{{item.name}}</p>
+                        <p class="time">{{item.pub}}</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="con_r">
+            <div class="top">
+                <span class="title">{{curBangList}}</span>
+                <span class="update_time">更新时间：{{pub}}</span>
+            </div>
+            <div class="btns">
+                <button class="play bg_primary" @click="playAll">
+                    <i class="iconfont">
+                        <img src="./lib/imgs/播放.png" alt="">
+                    </i>
+                    <span>播放全部</span>
+                </button>
+                <button>
+                    <i class="iconfont">
+                        <img src="./lib/imgs/添加.png" alt="">
+                    </i>
+                    <span>添加</span>
+                </button>
+                <button>
+                    <i class="iconfont">
+                        <img src="./lib/imgs/喜欢.png" alt="">
+                    </i>
+                    <span>收藏</span>
+                </button>
+                <button>
+                    <i class="iconfont">
+                        <img src="./lib/imgs/评论.png" alt="">
+                    </i>
+                    <span>评论</span>
+                </button>
+            </div>
+            <div class="list_out">
+                <div class="list_head head_name_rank">
+                    <ul class="flex_center">
+                        <li class="head_num">序号</li>
+                        <li class="head_name">歌曲</li>
+                        <li class="head_artist">歌手</li>
+                        <li class="head_album">专辑</li>
+                        <li class="head_time">时长</li>
+                    </ul>
+                </div>
+                <ul class="rank_list">
+                    <li :class="{song_item:true, flex_center:true,current:rid==item.rid }  "
+                        v-for="(item,index) in musicList" :key="item.name">
+                        <div class="song_rank flex_center">
+                            <div :class="getStyle(index)">{{index < 3 ? '' : index+1}}</div>
+                                    <div class="status"></div>
+                                    <img class="cover" :src="item.pic" alt="">
+                            </div>
+                            <div class="song_name flex_center">
+                                <a class="name">{{item.name}}</a>
+                                <i class="type">无损</i>
+                                <!--v-show="!item.mvpayinfo.vid==0"  -->
+                                <i class="mv" v-show="!item.mvpayinfo.vid==0" @click="getMv(item.rid)">mv</i>
+                            </div>
+                            <div class="song_artist">
+                                <span>{{item.artist}}</span>
+                            </div>
+                            <div class="song_album">
+                                <span>{{item.album}}</span>
+                            </div>
+                            <div class="song_time">
+                                <span>{{item.songTimeMinutes}}</span>
+                            </div>
+                            <div class="song_opts flex_center">
+                                <span @click="playSong(item.rid);addSong(item)"><img src="./lib/imgs/播放.png"
+                                        alt=""></span>
+                                <span><img src="./lib/imgs/添加.png" alt=""></span>
+                                <span><img src="./lib/imgs/喜欢.png" alt=""></span>
+                                <span><img src="./lib/imgs/xiazai.png" alt=""></span>
+                            </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="page-wrap">
+                <i class="li-page iconfont icon-icon_pageup notPointer pre " @click="prePage()">&lt;</i>
+                <ul class="flex_center">
+                    <li v-for="v in page" :class="{changeYellow:true ,pageActive: v==pn }" @click="changePage(v)">
+                        <span class="notCursor currentPage">{{v}}</span>
+                    </li>
+
+                </ul>
+                <i class="li-page iconfont icon-icon_pagedown notPointer next" @click="nextPage()">&gt;</i>
+            </div>
+
+        </div>
+        <div :class="{playControl:true,  islock:true}" ref="playControl">
+            <div class="control_out">
+                <div class="lock" @click="showLock">
+                    <img src="./lib/imgs/关锁.png" alt="" v-show="isLock">
+                    <img src="./lib/imgs/解锁.png" alt="" v-show="!isLock">
+                </div>
+                <div class="control">
+                    <div class="con_l flex_center">
+                        <a>
+                            <img :src="singleSong.pic" alt="" class="song_img">
+
+                        </a>
+                        <div>
+                            <div class="flex_center info_con">
+                                <div class="info">
+                                    <div>
+                                        <span class="song_name">{{singleSong.name}}</span>
+                                        <span class="artist"> - {{singleSong.artist}}</span>
+                                    </div>
+                                    <div style="display: none"> 酷我音乐-陪着我·不要停</div>
+                                </div>
+                                <span class="time">{{toTime(this.currentTime)}}/{{toTime(duration)}}</span>
+                            </div>
+                            <div class="process">
+                                <input type="range" class="changeProcess" min="0" :max="duration" :value="currentTime"
+                                    @change="changeLong">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col_c flex_center">
+                        <div class="prev" @click="prevSong">
+                            <img src="./lib/imgs/上一曲.png" alt="">
+                        </div>
+                        <div class="play" @click="plays">
+                            <img src="./lib/imgs/播放 (2).png" alt="" v-show="is_stop">
+                            <img src="./lib/imgs/暂停.png" alt="" v-show="!is_stop">
+                        </div>
+                        <div class="next" @click="nextSong"><img src="./lib/imgs/下一曲.png" alt=""></div>
+                    </div>
+                    <div class="col_r flex_center">
+                        <img src="./lib/imgs/喜欢.png" alt="">
+                        <img src="./lib/imgs/xiazai.png" alt="">
+                        <img src="./lib/imgs/评论.png" alt="">
+                        <img src="./lib/imgs/循环播放.png" alt="">
+                        <img src="./lib/imgs/音乐菜单.png" alt="" @click="toggleList">
+                        <div class="volume">
+                            <img src="./lib/imgs/声音-大.png" alt="">
+                            <input type="range" min="0" max="100" @change="changeVolum" :value="volume" class="volume">
+                        </div>
+                    </div>
+                </div>
+                <div class="song_list" v-show="showList">
+                    <div class="list_top flex_center">
+                        <div>
+                            <span class="text">播放列表</span>
+                            <span class="num">(共16首)</span>
+                        </div>
+                        <div class="flex_center">
+                            <div class="clear_all">
+                                <img src="./lib/imgs/删除.png" alt="" @click="clearList">
+                                <span class="clear_btn">清空列表</span>
+                                <img src="./lib/imgs/关闭-小.png" alt="" @click="closeList">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list_con">
+                        <div :class="{flex_center:true, list_item:true, active_cur:rid==v.rid}"
+                            v-for="(v,index) in playList" :key="v.name">
+                            <div class="list_idx">
+                                {{index+1}}
+                            </div>
+                            <div class="song_name" @click="playSong(v.rid) ">
+                                <span>{{v.name}}</span>
+                            </div>
+                            <div class="artist">
+                                <a>{{v.artist}}</a>
+                            </div>
+                            <div class="time">{{v.songTimeMinutes}}</div>
+                            <div class="song_opts flex_center">
+                                <img src="./lib/imgs//添加.png" alt="">
+                                <img src="./lib/imgs/喜欢.png" alt="">
+                                <img src="./lib/imgs/xiazai.png" alt="">
+                                <img src="./lib/imgs/删除.png" alt="" @click="deleteSong(index)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <audio ref="audio" :src="musicUrl" controls @timeupdate="getCurTime"></audio>
+        <video :src="mvUrl" autoplay controls></video>
+    </div>
+</body>
+
+<script src=" ./lib/vue.global.js"></script>
+<script src="./lib/axios.min.js"></script>
+<script src="./index.js"></script>
+
+</html>
