@@ -1,13 +1,5 @@
-git is a version control system.
-git is free software.
+## 在kwserver文件中打开cmd,输入node index 或者nodemon index
 
-20:54修改了第一次
-20:57修改了第二次
-21:58添加了一句话
+## 用vscode打开kwmusic文件夹，修改kwmusic文件夹index.js中url的地址，改为自己电脑的ip地址
 
-22:10添加的
-
-要加入GitHub了
-再加入一次
-
-听说远程的仓库换名字了，换成leangit了，再去一次
+##  在index.html中使用open with live server打开即可运行
