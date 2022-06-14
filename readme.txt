@@ -9,3 +9,5 @@ git is free software.
 
 要加入GitHub了
 再加入一次
+
+听说远程的仓库换名字了，换成leangit了，再去一次
